@@ -41,12 +41,30 @@ class Products with ChangeNotifier {
 
   List<Product> get favoriteItems => _items.where((element) => element.isFavorite).toList();
 
-  void addProduct(value) {
-    // _items.add(value);
+  Product findById(String id) {
+    return _items.firstWhere((element) => element.id == id);
+  }
+
+  void addProduct(Product product) {
+    final newProduct = Product(
+      id: DateTime.now().toString(),
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      imageUrl: product.imageUrl,
+    );
+    this._items.add(newProduct);
     notifyListeners();
   }
 
-  Product findById(String id) {
-    return _items.firstWhere((element) => element.id == id);
+  void updateProduct(String id, Product newProduct) {
+    final index = _items.indexWhere((element) => element.id == id);
+    _items[index] = newProduct;
+    notifyListeners();
+  }
+
+  void deleteProduct(String id) {
+    _items.removeWhere((element) => element.id == id);
+    notifyListeners();
   }
 }
