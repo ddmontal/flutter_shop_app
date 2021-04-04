@@ -38,19 +38,7 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Provider.of<Orders>(context, listen: false).addOrder(
-                        cartProvider.items.values.toList(),
-                        cartProvider.totalAmmount,
-                      );
-                      cartProvider.clearCart();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text('ORDER NOW'),
-                    ),
-                  )
+                  OrderButton(cartProvider: cartProvider)
                 ],
               ),
             ),
@@ -71,6 +59,56 @@ class CartScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cartProvider,
+  }) : super(key: key);
+
+  final Cart cartProvider;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: (widget.cartProvider.totalAmmount <= 0 || _isLoading)
+          ? null
+          : () async {
+              setState(() {
+                _isLoading = true;
+              });
+
+              try {
+                await Provider.of<Orders>(context, listen: false).addOrder(
+                  widget.cartProvider.items.values.toList(),
+                  widget.cartProvider.totalAmmount,
+                );
+                widget.cartProvider.clearCart();
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.toString()),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              } finally {
+                _isLoading = false;
+              }
+            },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: _isLoading ? Center(child: CircularProgressIndicator()) : Text('ORDER NOW'),
       ),
     );
   }
